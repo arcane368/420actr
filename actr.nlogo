@@ -13,13 +13,44 @@ turtles-own [
 
 to setup
   clear-all
-  
-  
+  setup-patches
+  setup-turtles
   reset-ticks
+end
+
+to setup-patches 
+  ask patches [
+    set energy 0
+    set w_length 0 ;; placeholder to initialize, should never access if energy=0
+    set l_position 0 ;; placeholder to initialize, should never access if energy=0
+  ]
+  
+end
+
+to setup-turtles
+  create-turtles 1 [set color yellow]
+  ask turtles [
+    facexy max-pxcor ycor
+  ]
+  
 end
 
 
 to go
+  ask patches [
+    if energy = 0 [
+      set pcolor black
+    ]
+  ]
+  ask turtles [
+    ifelse xcor = max-pxcor 
+    [
+      setxy min-pxcor ycor - 1
+    ]
+    [
+      forward 1
+    ]
+  ]
   
   
   tick
@@ -28,11 +59,11 @@ end
 GRAPHICS-WINDOW
 488
 11
-927
-471
-16
-16
-13.0
+828
+372
+5
+5
+30.0
 1
 10
 1
@@ -42,10 +73,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-5
+5
+-5
+5
 0
 0
 1
@@ -54,9 +85,9 @@ ticks
 
 SLIDER
 52
-55
+115
 245
-88
+148
 energy_decay_rate
 energy_decay_rate
 0
@@ -76,7 +107,7 @@ number_of_words
 number_of_words
 0
 100
-50
+5
 1
 1
 NIL
@@ -106,7 +137,7 @@ min_length
 min_length
 0
 100
-50
+41
 1
 1
 NIL
@@ -141,6 +172,40 @@ input_disparity
 1
 NIL
 HORIZONTAL
+
+BUTTON
+30
+24
+103
+57
+setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+127
+24
+190
+57
+go
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
