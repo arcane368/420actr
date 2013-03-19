@@ -1,9 +1,35 @@
+patches-own [
+  energy ;; intensity of colour - salience
+  w_length ;; word length
+  l_position ;; order in which it has been put into the list
+  
+]
+
+turtles-own [
+  energy_to_add ;; added to energy when rehearsed
+  
+]
+
+
+to setup
+  clear-all
+  
+  
+  reset-ticks
+end
+
+
+to go
+  
+  
+  tick
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-649
-470
+488
+11
+927
+471
 16
 16
 13.0
@@ -25,6 +51,96 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
+
+SLIDER
+52
+55
+245
+88
+energy_decay_rate
+energy_decay_rate
+0
+100
+49
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+61
+168
+233
+201
+number_of_words
+number_of_words
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+61
+208
+233
+241
+max_length
+max_length
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+62
+251
+234
+284
+min_length
+min_length
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+61
+300
+233
+333
+length_bias
+length_bias
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+61
+345
+233
+378
+input_disparity
+input_disparity
+0
+100
+50
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -369,7 +485,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.3
+NetLogo 5.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
