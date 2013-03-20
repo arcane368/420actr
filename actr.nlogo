@@ -1,12 +1,22 @@
 ;until get code working consider patches as all rehearsed at same rate by turtle, so short words or long words
 ;sliders to represent number of short and long words can be added in later
+;have a look at Rumor Mill NetLogo model and Britt's eye movement NetLogo model. 
+;Can track patches that were visited (i.e.rehearsed) more than other patches
+
+;; Variable declaration
+
+globals [
+  decay_rate       ;;set from slider
+  number_shrtwords  ;;set from slider
+  number_lngwords   ;;set from slider
+]
 
 patches-own [
   set pcolor black  ;;black indicates energy is 0
-  patch_energy            ;; amount of energy this patch contains represented by intensity of colour - salience 
+  patch_energy      ;;amount of energy this patch contains represented by intensity of colour - salience 
   max_energy        ;;maximum energy of patch
-  set visited 0     ;;initially none of patches have been visited by turtle
-  w_length          ;; word length
+  times-visited     ;;tracks times the patch was visited
+  w_length          ;;word length
   l_position        ;; order in which it has been put into the list
   
 ]
@@ -18,6 +28,7 @@ turtles-own [
   
 ]
 
+;; setup procedures
 
 to setup
   clear-all
@@ -29,6 +40,7 @@ end
 to setup-patches 
   ask patches [
     set energy 0
+    set times-visited 0  ;;intially none of words (i.e. patches) were rehearsed by articulator (i.e. turtle)
     set w_length 0      ;; placeholder to initialize, should never access if energy=0
     set l_position 0    ;; placeholder to initialize, should never access if energy=0
   ]
@@ -43,6 +55,7 @@ to setup-turtles
   
 end
 
+;; runtime procedures moving turtle to patch, turtle visits to patch and adding energy to patch
 
 to go
   ask patches [
@@ -71,12 +84,12 @@ end
 
 to add_energytopatch
    ask turtles [
-      if patch_visited = 0 [
+      if times-visited = 0 [
         [
          set pcolor green
          set patch_energy = 1     ;; if patch turtle is on was not visited or rehearsed then
          ]
-      if patch_visited = 1 [
+      if times-visited = 1 [
         [ 
          set pcolor red
          set patch_energy = 2
