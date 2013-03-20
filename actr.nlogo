@@ -1,3 +1,6 @@
+;until get code working consider patches as all rehearsed at same rate by turtle, so short words or long words
+;sliders to represent number of short and long words can be added in later
+
 patches-own [
   set pcolor black  ;;black indicates energy is 0
   patch_energy            ;; amount of energy this patch contains represented by intensity of colour - salience 
@@ -56,9 +59,14 @@ to go
       forward 1
     ]
   ]
-  
-  
   tick
+end
+
+to move-turtles
+  ask turtles [
+    right random 360  ;; want turtle to go from patch 1 then patch 2 to end in serial order then cycle
+    forward 1
+  ]
 end
 
 to add_energytopatch
@@ -66,7 +74,7 @@ to add_energytopatch
       if patch_visited = 0 [
         [
          set pcolor green
-         set patch_energy = 1
+         set patch_energy = 1     ;; if patch turtle is on was not visited or rehearsed then
          ]
       if patch_visited = 1 [
         [ 
