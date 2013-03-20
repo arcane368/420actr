@@ -1,17 +1,17 @@
 patches-own [
   set pcolor black  ;;black indicates energy is 0
-  energy ;; amount of energy this patch contains represented by intensity of colour - salience 
-  max_energy  ;;maximum energy of patch
-  set visited 0  ;;initially none of patches have been visited by turtle
-  w_length ;; word length
-  l_position ;; order in which it has been put into the list
+  energy            ;; amount of energy this patch contains represented by intensity of colour - salience 
+  max_energy        ;;maximum energy of patch
+  set visited 0     ;;initially none of patches have been visited by turtle
+  w_length          ;; word length
+  l_position        ;; order in which it has been put into the list
   
 ]
 
 turtles-own [
-  set color green  ;; turtle is the articulator just adds energy to patch does not lose energy
+  set color green    ;; turtle is the articulator just adds energy to patch does not lose energy
   set shape "circle"  
-  energy_to_add ;; added to energy of patch when rehearsed or visited
+  energy_to_add      ;; added to energy of patch when rehearsed or visited
   
 ]
 
@@ -26,8 +26,8 @@ end
 to setup-patches 
   ask patches [
     set energy 0
-    set w_length 0 ;; placeholder to initialize, should never access if energy=0
-    set l_position 0 ;; placeholder to initialize, should never access if energy=0
+    set w_length 0      ;; placeholder to initialize, should never access if energy=0
+    set l_position 0    ;; placeholder to initialize, should never access if energy=0
   ]
   
 end
