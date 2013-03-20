@@ -69,7 +69,7 @@ to add_energytopatch
          set patch_energy = 1
          ]
       if patch_visited = 1 [
-        ask patches [ 
+        [ 
          set pcolor red
          set patch_energy = 2
         ]
