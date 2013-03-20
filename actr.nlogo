@@ -28,7 +28,7 @@ turtles-own [
   
 ]
 
-;; setup procedures
+;; Setup procedures
 
 to setup
   clear-all
@@ -55,7 +55,7 @@ to setup-turtles
   
 end
 
-;; runtime procedures moving turtle to patch, turtle visits to patch and adding energy to patch
+;; Runtime procedures moving turtle to patch, turtle visits to patch and adding energy to patch
 
 to go
   ask patches [
