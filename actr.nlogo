@@ -3,7 +3,7 @@
 ;have a look at Rumor Mill NetLogo model and Britt's eye movement NetLogo model. 
 ;Can track patches that were visited (i.e.rehearsed) more than other patches
 
-;; Variable declaration
+;; Declaration of variables
 
 globals [
   decay_rate       ;;set from slider
