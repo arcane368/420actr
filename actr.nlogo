@@ -1,6 +1,6 @@
 patches-own [
   set pcolor black  ;;black indicates energy is 0
-  energy            ;; amount of energy this patch contains represented by intensity of colour - salience 
+  patch_energy            ;; amount of energy this patch contains represented by intensity of colour - salience 
   max_energy        ;;maximum energy of patch
   set visited 0     ;;initially none of patches have been visited by turtle
   w_length          ;; word length
@@ -60,6 +60,23 @@ to go
   
   tick
 end
+
+to add_energytopatch
+   ask turtles [
+      if patch_visited = 0 [
+        [
+         set pcolor green
+         set patch_energy = 1
+         ]
+      if patch_visited = 1 [
+        ask patches [ 
+         set pcolor red
+         set patch_energy = 2
+        ]
+end
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 488
