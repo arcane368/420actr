@@ -14,6 +14,8 @@ patches-own [
 turtles-own [
   stay_length ;; how much time should this agent be stuck on this patch
   on_new_patch ;; so it knows to move on after it adds enough energy to one patch
+  x_last_visited ;; keep track if we've gone through all patches already
+  y_last_visited
 ]
 
 breed [inputters inputter]
@@ -45,11 +47,11 @@ to setup-turtles
   create-inputters 1 [set color blue] ;; adds words
   create-recallers 1 [set color yellow set shape "circle"] ;; recalls words
   ask turtles [
-    facexy max-pxcor ycor ;; face the right
+    set heading 90 ;; turn to right
   ]
   ask recallers [
     set on_new_patch true
-    back 2 ;; put recaller behind inputter at the beginning
+
   ]
   
 end
@@ -95,12 +97,12 @@ to move_inputter_serial
   ask inputters [
     if (number_of_words_internal > 0) [
       ifelse (random 100 < length_bias) [
-        ask patch-here [set w_length min_length] ;; depending on bias, short word, or..
-        set plabel (word p_energy " " min_length)
+        ask patch-here [set w_length short_length] ;; depending on bias, short word, or..
+        set plabel (word p_energy " " short_length)
       ]
       [
-        set w_length max_length ;; long word
-        set plabel (word p_energy " " max_length)
+        set w_length long_length ;; long word
+        set plabel (word p_energy " " long_length)
       ]
       ask patch-here [set p_energy max_p_energy]
       move_serial
@@ -117,7 +119,7 @@ to update_patch_colour
       set pcolor black
     ]
     [
-      ifelse (w_length = min_length) [ ;; short words are green
+      ifelse (w_length = short_length) [ ;; short words are green
         set pcolor (scale-color green p_energy 0 max_p_energy);; stuff green after darkens it
       ]
       [ ;; long words are red
@@ -138,11 +140,13 @@ to move_recaller_serial
       if p_energy > max_p_energy [ set p_energy max_p_energy]
       set stay_length stay_length - 1
       set on_new_patch false
+      set x_last_visited xcor
+      set y_last_visited ycor
     ]
     [
       ;; if we're not staying, then move ahead one
       move_serial
-      while [p_energy <= 0] ;; will equal to 0 in next tick
+      while [p_energy <= 0 and (x_last_visited != xcor or y_last_visited != ycor)]
       [move_serial] ;; keep moving if nothing here
       
       set on_new_patch true
@@ -151,15 +155,15 @@ to move_recaller_serial
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-547
-10
-961
-445
-5
-5
-36.73
+374
+31
+1199
+225
+-1
+-1
+81.5
 1
-10
+15
 1
 1
 1
@@ -167,36 +171,36 @@ GRAPHICS-WINDOW
 1
 1
 1
--5
-5
--5
-5
+0
+9
+-1
+0
 0
 0
 1
 ticks
-30.0
+5.0
 
 SLIDER
-52
-115
-245
-148
+8
+125
+353
+158
 energy_decay_rate
 energy_decay_rate
 0
-20
-2
-1
+15
+1.5
+0.1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-61
-168
-233
-201
+8
+214
+237
+247
 number_of_words
 number_of_words
 0
@@ -208,12 +212,12 @@ NIL
 HORIZONTAL
 
 SLIDER
-61
-208
-233
-241
-max_length
-max_length
+182
+254
+354
+287
+long_length
+long_length
 0
 20
 7
@@ -223,42 +227,27 @@ NIL
 HORIZONTAL
 
 SLIDER
-62
-251
-234
-284
-min_length
-min_length
+7
+254
+179
+287
+short_length
+short_length
 0
 20
-2
+3
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-61
-300
-233
-333
+95
+294
+267
+327
 length_bias
 length_bias
-0
-100
-52
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-61
-345
-233
-378
-input_disparity
-input_disparity
 0
 100
 50
@@ -270,8 +259,8 @@ HORIZONTAL
 BUTTON
 30
 24
-103
-57
+191
+71
 setup
 setup
 NIL
@@ -285,10 +274,10 @@ NIL
 1
 
 BUTTON
-127
-24
-190
-57
+221
+25
+322
+71
 go
 go
 T
@@ -302,25 +291,25 @@ NIL
 1
 
 SLIDER
-60
-395
-232
-428
+8
+169
+354
+202
 energy_to_add
 energy_to_add
 0
+50
 20
-10
 1
 1
 NIL
 HORIZONTAL
 
 BUTTON
-252
-171
-342
-204
+255
+215
+345
+248
 Add words
 set number_of_words_internal number_of_words
 NIL
@@ -334,13 +323,13 @@ NIL
 0
 
 PLOT
-268
-252
-533
-402
+377
+254
+642
+396
 Words in memory
-NIL
-NIL
+Time
+# of Words
 0.0
 10.0
 0.0
@@ -349,8 +338,23 @@ true
 true
 "" ""
 PENS
-"Short" 1.0 0 -13840069 true "" "plot count patches with [p_energy > 0 and w_length = min_length]"
-"Long" 1.0 0 -2674135 true "" "plot count patches with [p_energy > 0 and w_length = max_length]"
+"Short" 1.0 0 -13840069 true "" "plot count patches with [p_energy > 0 and w_length = short_length]"
+"Long" 1.0 0 -2674135 true "" "plot count patches with [p_energy > 0 and w_length = long_length]"
+
+SLIDER
+7
+82
+353
+115
+word_maximum_energy
+word_maximum_energy
+0
+500
+100
+50
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
