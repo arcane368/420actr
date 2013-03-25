@@ -1,29 +1,13 @@
-;until get code working consider patches as all rehearsed at same rate by turtle, so short words or long words
-;sliders to represent number of short and long words can be added in later
-;have a look at Rumor Mill NetLogo model and Britt's eye movement NetLogo model. 
-;Can track patches that were visited (i.e.rehearsed) more than other patches
-
-;; Declaration of variables
-
-globals [
-  decay_rate       ;;set from slider
-  number_shrtwords  ;;set from slider
-  number_lngwords   ;;set from slider
-]
-
 patches-own [
-  set pcolor black  ;;black indicates energy is 0
-  patch_energy      ;;amount of energy this patch contains represented by intensity of colour - salience 
-  max_energy        ;;maximum energy of patch
-  times-visited     ;;tracks times the patch was visited
-  w_length          ;;word length
-  l_position        ;; order in which it has been put into the list
+  p_energy ;;amount of energy this patch contains represented by intensity of colour - salience 
+  max_energy ;; maximum energy of patch
+  times-visited ;; tracks times the patch was visited
+  w_length ;; word length
+  l_position ;; order in which it has been put into the list
   
 ]
 
 turtles-own [
-  set color green    ;; turtle is the articulator just adds energy to patch does not lose energy
-  set shape "circle"  
   energy_to_add      ;; added to energy of patch when rehearsed or visited
   
 ]
@@ -39,7 +23,8 @@ end
 
 to setup-patches 
   ask patches [
-    set energy 0
+    set pcolor black ;; black indicates energy is 0
+    set p_energy 0
     set times-visited 0  ;;intially none of words (i.e. patches) were rehearsed by articulator (i.e. turtle)
     set w_length 0      ;; placeholder to initialize, should never access if energy=0
     set l_position 0    ;; placeholder to initialize, should never access if energy=0
@@ -48,7 +33,7 @@ to setup-patches
 end
 
 to setup-turtles
-  create-turtles 1 [set color yellow]
+  create-turtles 1 [set color green set shape "circle"]
   ask turtles [
     facexy max-pxcor ycor
   ]
@@ -59,10 +44,16 @@ end
 
 to go
   ask patches [
-    if energy = 0 [
+    if p_energy = 0 [
       set pcolor black
     ]
   ]
+  move_turtle_serial
+  
+  tick
+end
+
+to move_turtle_serial
   ask turtles [
     ifelse xcor = max-pxcor 
     [
@@ -72,32 +63,7 @@ to go
       forward 1
     ]
   ]
-  tick
 end
-
-to move-turtles
-  ask turtles [
-    right random 360  ;; want turtle to go from patch 1 then patch 2 to end in serial order then cycle
-    forward 1
-  ]
-end
-
-to add_energytopatch
-   ask turtles [
-      if times-visited = 0 [
-        [
-         set pcolor green
-         set patch_energy = 1     ;; if patch turtle is on was not visited or rehearsed then
-         ]
-      if times-visited = 1 [
-        [ 
-         set pcolor red
-         set patch_energy = 2
-        ]
-end
-
-
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 488
@@ -593,7 +559,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.4
+NetLogo 5.0.3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
