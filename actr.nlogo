@@ -72,10 +72,11 @@ end
 to decay_patches
   ask patches [
     ifelse (p_energy > 0) [
-      set p_energy p_energy - (energy_decay_rate)
+      set p_energy p_energy - (energy_decay_rate * w_length)
     ]
     [ 
       set p_energy 0 ;; set to 0 if it goes negative
+      set w_length 0
     ]
   ]
 end
@@ -95,9 +96,11 @@ to move_inputter_serial
     if (number_of_words_internal > 0) [
       ifelse (random 100 < length_bias) [
         ask patch-here [set w_length min_length] ;; depending on bias, short word, or..
+        set plabel (word p_energy " " min_length)
       ]
       [
-        ask patch-here [set w_length max_length] ;; long word
+        set w_length max_length ;; long word
+        set plabel (word p_energy " " max_length)
       ]
       ask patch-here [set p_energy max_p_energy]
       move_serial
@@ -109,15 +112,16 @@ end
 
 to update_patch_colour
   ask patches [
+    set plabel (word p_energy " " w_length)
     ifelse (p_energy) <= 0 [
       set pcolor black
     ]
     [
       ifelse (w_length = min_length) [ ;; short words are green
-        set pcolor green - (max_p_energy - p_energy) * 0.05 ;; stuff green after darkens it
+        set pcolor (scale-color green p_energy 0 max_p_energy);; stuff green after darkens it
       ]
       [ ;; long words are red
-        set pcolor red - (max_p_energy - p_energy) * 0.05
+        set pcolor (scale-color red p_energy 0 max_p_energy)
       ]
     ]
   ]
@@ -129,15 +133,16 @@ to move_recaller_serial
         set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
       ]
     
-    ifelse (stay_length > 0) [
+    ifelse (stay_length > 0 and p_energy <= max_p_energy) [
       ask patch-here [set p_energy p_energy + energy_to_add]
+      if p_energy > max_p_energy [ set p_energy max_p_energy]
       set stay_length stay_length - 1
       set on_new_patch false
     ]
     [
       ;; if we're not staying, then move ahead one
       move_serial
-      while [p_energy <= energy_decay_rate] ;; will equal to 0 in next tick
+      while [p_energy <= 0] ;; will equal to 0 in next tick
       [move_serial] ;; keep moving if nothing here
       
       set on_new_patch true
@@ -146,13 +151,13 @@ to move_recaller_serial
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-488
-11
-828
-372
+547
+10
+961
+445
 5
 5
-30.0
+36.73
 1
 10
 1
@@ -305,7 +310,7 @@ energy_to_add
 energy_to_add
 0
 20
-20
+10
 1
 1
 NIL
@@ -327,6 +332,25 @@ NIL
 NIL
 NIL
 0
+
+PLOT
+268
+252
+533
+402
+Words in memory
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+true
+"" ""
+PENS
+"Short" 1.0 0 -13840069 true "" "plot count patches with [p_energy > 0 and w_length = min_length]"
+"Long" 1.0 0 -2674135 true "" "plot count patches with [p_energy > 0 and w_length = max_length]"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -465,7 +489,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.3
+NetLogo 5.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
