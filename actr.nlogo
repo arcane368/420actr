@@ -97,14 +97,14 @@ to move_inputter_serial
   ask inputters [
     if (number_of_words_internal > 0) [
       ifelse (random 100 < length_bias) [
-        ask patch-here [set w_length short_length] ;; depending on bias, short word, or..
+        set w_length short_length ;; depending on bias, short word, or..
         set plabel (word p_energy " " short_length)
       ]
       [
         set w_length long_length ;; long word
         set plabel (word p_energy " " long_length)
       ]
-      ask patch-here [set p_energy max_p_energy]
+      set p_energy max_p_energy
       move_serial
       
       set number_of_words_internal number_of_words_internal - 1
@@ -120,10 +120,10 @@ to update_patch_colour
     ]
     [
       ifelse (w_length = short_length) [ ;; short words are green
-        set pcolor (scale-color green p_energy 0 max_p_energy);; stuff green after darkens it
+        set pcolor (((scale-color green p_energy 0 max_p_energy) - (green - 5)) * 0.5) + green - 5;; darker when less energy
       ]
       [ ;; long words are red
-        set pcolor (scale-color red p_energy 0 max_p_energy)
+        set pcolor (((scale-color red p_energy 0 max_p_energy) - (red - 5)) * 0.5) + red - 5
       ]
     ]
   ]
@@ -136,8 +136,8 @@ to move_recaller_serial
       ]
     
     ifelse (stay_length > 0 and p_energy <= max_p_energy) [
-      ask patch-here [set p_energy p_energy + energy_to_add]
-      if p_energy > max_p_energy [ set p_energy max_p_energy]
+      set p_energy p_energy + energy_to_add
+      if p_energy > max_p_energy [set p_energy max_p_energy]
       set stay_length stay_length - 1
       set on_new_patch false
       set x_last_visited xcor
