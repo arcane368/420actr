@@ -2,15 +2,18 @@ patches-own [
   p_energy ;;amount of energy this patch contains represented by intensity of colour - salience 
   max_energy ;; maximum energy of patch
   times-visited ;; tracks times the patch was visited
-  w_length ;; word length
+  w_length ;; word length - Shorter words are GREEN, Longer words will turn RED
   l_position ;; order in which it has been put into the list
   
 ]
 
 turtles-own [
-  energy_to_add      ;; added to energy of patch when rehearsed or visited
-  
+  stay_length ;; how much time should this agent be stuck on this patch
+  on_new_patch ;; so it knows to move on after it adds enough energy
 ]
+
+breed [inputters inputter]
+breed [recallers recaller]
 
 ;; Setup procedures
 
@@ -18,12 +21,12 @@ to setup
   clear-all
   setup-patches
   setup-turtles
+  random-seed 4356653
   reset-ticks
 end
 
 to setup-patches 
   ask patches [
-    set pcolor black ;; black indicates energy is 0
     set p_energy 0
     set times-visited 0  ;;intially none of words (i.e. patches) were rehearsed by articulator (i.e. turtle)
     set w_length 0      ;; placeholder to initialize, should never access if energy=0
@@ -33,9 +36,14 @@ to setup-patches
 end
 
 to setup-turtles
-  create-turtles 1 [set color green set shape "circle"]
+  create-inputters 1 [set color blue]
+  create-recallers 1 [set color green set shape "circle"]
   ask turtles [
     facexy max-pxcor ycor
+  ]
+  ask recallers [
+    set on_new_patch true
+    back 2 ;; put recaller behind inputter at the beginning
   ]
   
 end
@@ -43,24 +51,89 @@ end
 ;; Runtime procedures moving turtle to patch, turtle visits to patch and adding energy to patch
 
 to go
-  ask patches [
-    if p_energy = 0 [
-      set pcolor black
-    ]
-  ]
-  move_turtle_serial
+  decay_patches
+  update_patch_colour
+  move_inputter_serial
+  move_recaller_serial
+  
   
   tick
 end
 
-to move_turtle_serial
-  ask turtles [
+to decay_patches
+  ask patches [
+    ifelse (p_energy > 0) [
+      set p_energy p_energy - (energy_decay_rate)
+    ]
+    [ 
+      set p_energy 0
+    ]
+  ]
+end
+
+
+to move_inputter_serial
+  ask inputters [
+    ifelse (random 100 < length_bias) [
+      ask patch-here [set w_length min_length]
+    ]
+    [
+      ask patch-here [set w_length max_length]
+    ]
+    ask patch-here [set p_energy 100]
+
     ifelse xcor = max-pxcor 
     [
       setxy min-pxcor ycor - 1
     ]
     [
       forward 1
+    ]
+  ]
+end
+
+to update_patch_colour
+  ask patches [
+    ifelse (p_energy) <= 0 [
+      set pcolor black
+    ]
+    [
+      ifelse (w_length = min_length) [
+        set pcolor green
+      ]
+      [
+        set pcolor red
+      ]
+      ;; now to darken if p_energy lower
+      set pcolor pcolor - (100 - p_energy) * 0.05
+    ]
+  ]
+end
+
+to move_recaller_serial
+  ask recallers [
+    if (p_energy > 0 and stay_length <= 0 and on_new_patch) [
+        set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
+        set on_new_patch false
+      ]
+    
+    ifelse (stay_length > 0) [
+      ask patch-here [set p_energy p_energy + energy_to_add]
+      set stay_length stay_length - 1
+    ]
+    [
+      ;; if we're not staying, then move ahead one
+      ifelse xcor = max-pxcor 
+      [
+        setxy min-pxcor ycor - 1
+      ]
+      [
+        while [p_energy <= 0] [
+          set p_energy 0 ;; make sure not negative
+          forward 1 ;; move til next word that hasn't died
+        ]
+      ]
+      set on_new_patch true
     ]
   ]
 end
@@ -101,7 +174,7 @@ energy_decay_rate
 energy_decay_rate
 0
 100
-49
+9
 1
 1
 NIL
@@ -130,8 +203,8 @@ SLIDER
 max_length
 max_length
 0
-100
-50
+20
+7
 1
 1
 NIL
@@ -145,8 +218,8 @@ SLIDER
 min_length
 min_length
 0
-100
-41
+20
+2
 1
 1
 NIL
@@ -215,6 +288,21 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+60
+395
+232
+428
+energy_to_add
+energy_to_add
+0
+20
+20
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
