@@ -367,31 +367,53 @@ HORIZONTAL
 
 ## HOW TO USE IT
 
-(how to use the model, including a description of each of the items in the Interface tab)
+1. Adjust the slider parameters (see below), or use the default settings.
+2. Press the SETUP button.
+3. Press the GO button to begin the simulation.
+4. Look at the monitor to see the Total Amount of Words currently in memory
+
+
+
+Parameters: 
+WORD-MAXIMUM-ENERGY: The maximum amount of energy a word can contain
+ENERGY-DECAY-RATE: The initial energy decay rate
+ENERGY-TO-ADD: The amount of energy added to a word during rehersal
+NUMBER-OF-WORDS: The amount of words which will be added to memory 
+SHEEP-REPRODUCE: The probability of a sheep reproducing at each time step WOLF-REPRODUCE: The probability of a wolf reproducing at each time step 
+SHORT-LENGTH: Defines length for short words
+LONG-LENGTH: Defines length for long words
+LENGTH-BIAS: Used to bias randomly choosen word lengths used
+
+Notes: - Add words button when clicked will add NUMBER-OF-WORDS more words to the model
 
 ## THINGS TO NOTICE
 
-(suggested things for the user to notice while running the model)
+Notice that longer words stay in memory for less amount of time then the short words.
+This is because shorter words can be rehersed more often in memory, gaining more enery than longer words and hence can stay in memory longer.
 
 ## THINGS TO TRY
 
-(suggested things for the user to try to do (move sliders, switches, etc.) with the model)
+Try changing the parameters around to test different combinations of word lengths (ie. majority longer words).
+
+What kind of results do you expect to see? Are the results different than when compared to the default values?
 
 ## EXTENDING THE MODEL
 
-(suggested things to add or change in the Code tab to make the model more complicated, detailed, accurate, etc.)
+(suggested extenstions to model)
+
 
 ## NETLOGO FEATURES
 
-(interesting or unusual features of NetLogo that the model uses, particularly in the Code tab; or where workarounds were needed for missing features)
+Note the use of breeds to model two different kinds of “turtles”: rehersal-loop (yellow circle) and word-inserter (blue arrow). 
 
-## RELATED MODELS
+Note the use of patches to model a word. THe first set of interger(s) displayed on a patch refer to the current energy that word has , and the 2nd set of interger(s) displayed refers to the length of the word.
 
-(models in the NetLogo Models Library and elsewhere which are of related interest)
+Red patches are long words and Green patches are short words. As energy decreases the patches fade to black (decayed)
+
 
 ## CREDITS AND REFERENCES
 
-(a reference to the model's URL on the web if it has one, as well as any other necessary credits, citations, and links)
+(credits/references)
 @#$#@#$#@
 default
 true
@@ -493,7 +515,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.4
+NetLogo 5.0.3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
