@@ -44,16 +44,22 @@ to setup-patches
 end
 
 to setup-turtles
-  create-inputters 1 [set color blue] ;; adds words
-  create-recallers 1 [set color yellow set shape "circle"] ;; recalls words
-  ask turtles [
-    set heading 90 ;; turn to right
+  ifelse Articulatory_Suppression [     ;; ifelse statement for Articulatory Suppression
+    create-inputters 1 [set color blue] ;; adds words
+    ask turtles [
+      set heading 90 ;; turn to right
+    ]
   ]
-  ask recallers [
-    set on_new_patch true
-
+  [
+    create-inputters 1 [set color blue] ;; adds words
+    create-recallers 1 [set color yellow set shape "circle"] ;; recalls words
+    ask turtles [
+       set heading 90 ;; turn to right
+    ]
+    ask recallers [
+       set on_new_patch true
+    ]
   ]
-  
 end
 
 
@@ -356,6 +362,17 @@ word_maximum_energy
 NIL
 HORIZONTAL
 
+SWITCH
+92
+351
+286
+384
+Articulatory_Suppression
+Articulatory_Suppression
+1
+1
+-1000
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -384,7 +401,8 @@ SHORT-LENGTH: Defines length for short words
 LONG-LENGTH: Defines length for long words
 LENGTH-BIAS: Used to bias randomly choosen word lengths used
 
-Notes: - Add words button when clicked will add NUMBER-OF-WORDS more words to the model
+Notes: - Add words button when clicked will add NUMBER-OF-WORDS more words to the model.
+         The Articulatory Suppression switch removes the rehersal turtle.
 
 ## THINGS TO NOTICE
 
@@ -515,7 +533,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.3
+NetLogo 5.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
