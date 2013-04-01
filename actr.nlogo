@@ -1,7 +1,11 @@
 globals [
   number_of_words_internal
+<<<<<<< HEAD
   newx
   newy
+=======
+  move_dist
+>>>>>>> b53ee7b633829e47d815d9e33c05637ceb755f10
 ]
 
 patches-own [
@@ -28,7 +32,10 @@ to setup
   clear-all
   setup-patches
   setup-turtles
+<<<<<<< HEAD
   set word_maximum_energy 100
+=======
+>>>>>>> b53ee7b633829e47d815d9e33c05637ceb755f10
   set number_of_words_internal number_of_words
   random-seed 4356653
   reset-ticks
@@ -45,16 +52,22 @@ to setup-patches
 end
 
 to setup-turtles
-  create-inputters 1 [set color blue] ;; adds words
-  create-recallers 1 [set color yellow set shape "circle"] ;; recalls words
-  ask turtles [
-    set heading 90 ;; turn to right
+  ifelse Articulatory_Suppression [     ;; ifelse statement for Articulatory Suppression
+    create-inputters 1 [set color blue] ;; adds words
+    ask turtles [
+      set heading 90 ;; turn to right
+    ]
   ]
-  ask recallers [
-    set on_new_patch true
-
+  [
+    create-inputters 1 [set color blue] ;; adds words
+    create-recallers 1 [set color yellow set shape "circle"] ;; recalls words
+    ask turtles [
+       set heading 90 ;; turn to right
+    ]
+    ask recallers [
+       set on_new_patch true
+    ]
   ]
-  
 end
 
 
@@ -65,7 +78,10 @@ end
 
 to go
   update_patch_colour
-  move_inputter_serial
+  if ticks mod time_between_new_words = 0
+  [
+    move_inputter_serial
+  ]
   move_recaller_serial
   
   decay_patches
@@ -105,7 +121,11 @@ to move_inputter_serial
         set w_length long_length ;; long word
         set plabel (word p_energy " " long_length)
       ]
+<<<<<<< HEAD
       set p_energy word_maximum_energy
+=======
+      set p_energy energy_at_creation
+>>>>>>> b53ee7b633829e47d815d9e33c05637ceb755f10
       move_serial
       
       set number_of_words_internal number_of_words_internal - 1
@@ -146,6 +166,7 @@ to move_recaller_serial
     ]
     [
       ;; if we're not staying, then move ahead one
+<<<<<<< HEAD
       set newx xcor
       set newy ycor
       ifelse xcor >= max-pxcor ;; if reaches end of row
@@ -171,6 +192,22 @@ to move_recaller_serial
       print newx
       print newy
       setxy newx newy
+=======
+      set move_dist 1
+      while [[p_energy] of patch-ahead move_dist <= 0 and (x_last_visited != xcor + move_dist or y_last_visited != ycor)]
+      [
+        ifelse xcor + move_dist = max-pxcor ;; if reaches end of row
+        [
+          setxy min-pxcor ycor - 1 ;; go to next row
+          set move_dist 0
+        ]
+        [
+          set move_dist move_dist + 1
+        ]
+        print move_dist
+      ] ;; keep moving if nothing here
+      setxy (xcor + move_dist) ycor
+>>>>>>> b53ee7b633829e47d815d9e33c05637ceb755f10
       set on_new_patch true
     ]
   ]
@@ -264,10 +301,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-95
-294
-267
-327
+6
+292
+178
+325
 length_bias
 length_bias
 0
@@ -378,6 +415,47 @@ word_maximum_energy
 NIL
 HORIZONTAL
 
+SWITCH
+94
+377
+288
+410
+Articulatory_Suppression
+Articulatory_Suppression
+1
+1
+-1000
+
+SLIDER
+181
+291
+355
+324
+time_between_new_words
+time_between_new_words
+0
+200
+31
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+9
+329
+179
+362
+energy_at_creation
+energy_at_creation
+0
+500
+50
+1
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -406,7 +484,8 @@ SHORT-LENGTH: Defines length for short words
 LONG-LENGTH: Defines length for long words
 LENGTH-BIAS: Used to bias randomly choosen word lengths used
 
-Notes: - Add words button when clicked will add NUMBER-OF-WORDS more words to the model
+Notes: - Add words button when clicked will add NUMBER-OF-WORDS more words to the model.
+         The Articulatory Suppression switch removes the rehersal turtle.
 
 ## THINGS TO NOTICE
 
