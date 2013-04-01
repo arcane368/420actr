@@ -1,6 +1,7 @@
 globals [
-  max_p_energy ;; constant for how numerical value of patch energy
   number_of_words_internal
+  newx
+  newy
 ]
 
 patches-own [
@@ -27,7 +28,7 @@ to setup
   clear-all
   setup-patches
   setup-turtles
-  set max_p_energy 100
+  set word_maximum_energy 100
   set number_of_words_internal number_of_words
   random-seed 4356653
   reset-ticks
@@ -104,7 +105,7 @@ to move_inputter_serial
         set w_length long_length ;; long word
         set plabel (word p_energy " " long_length)
       ]
-      set p_energy max_p_energy
+      set p_energy word_maximum_energy
       move_serial
       
       set number_of_words_internal number_of_words_internal - 1
@@ -120,10 +121,10 @@ to update_patch_colour
     ]
     [
       ifelse (w_length = short_length) [ ;; short words are green
-        set pcolor (((scale-color green p_energy 0 max_p_energy) - (green - 5)) * 0.5) + green - 5;; darker when less energy
+        set pcolor (((scale-color green p_energy 0 word_maximum_energy) - (green - 5)) * 0.5) + green - 5;; darker when less energy
       ]
       [ ;; long words are red
-        set pcolor (((scale-color red p_energy 0 max_p_energy) - (red - 5)) * 0.5) + red - 5
+        set pcolor (((scale-color red p_energy 0 word_maximum_energy) - (red - 5)) * 0.5) + red - 5
       ]
     ]
   ]
@@ -135,9 +136,9 @@ to move_recaller_serial
         set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
       ]
     
-    ifelse (stay_length > 0 and p_energy <= max_p_energy) [
+    ifelse (stay_length > 0 and p_energy <= word_maximum_energy) [
       set p_energy p_energy + energy_to_add
-      if p_energy > max_p_energy [set p_energy max_p_energy]
+      if p_energy > word_maximum_energy [set p_energy word_maximum_energy]
       set stay_length stay_length - 1
       set on_new_patch false
       set x_last_visited xcor
@@ -145,10 +146,31 @@ to move_recaller_serial
     ]
     [
       ;; if we're not staying, then move ahead one
-      move_serial
-      while [p_energy <= 0 and (x_last_visited != xcor or y_last_visited != ycor)]
-      [move_serial] ;; keep moving if nothing here
-      
+      set newx xcor
+      set newy ycor
+      ifelse xcor >= max-pxcor ;; if reaches end of row
+        [
+          set newx min-pxcor
+          set newy (ycor - 1) mod (min-pycor - 1)
+        ]
+        [
+          set newx (newx + 1)
+        ]
+      while [[p_energy] of patch newx newy <= 0 and not (x_last_visited = newx and y_last_visited = newy)]
+      [
+        ifelse xcor >= max-pxcor ;; if reaches end of row
+        [
+          set newx min-pxcor
+          set newy (ycor - 1) mod (min-pycor - 1)
+        ]
+        [
+          set newx (newx + 1)
+        ]
+      ] ;; keep moving if nothing here
+      print "new"
+      print newx
+      print newy
+      setxy newx newy
       set on_new_patch true
     ]
   ]
@@ -205,7 +227,7 @@ number_of_words
 number_of_words
 0
 100
-10
+15
 1
 1
 NIL
@@ -515,7 +537,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.3
+NetLogo 5.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
