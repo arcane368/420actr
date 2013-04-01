@@ -1,6 +1,6 @@
 globals [
-  max_p_energy ;; constant for how numerical value of patch energy
   number_of_words_internal
+  move_dist
 ]
 
 patches-own [
@@ -27,7 +27,6 @@ to setup
   clear-all
   setup-patches
   setup-turtles
-  set max_p_energy 100
   set number_of_words_internal number_of_words
   random-seed 4356653
   reset-ticks
@@ -70,7 +69,10 @@ end
 
 to go
   update_patch_colour
-  move_inputter_serial
+  if ticks mod time_between_new_words = 0
+  [
+    move_inputter_serial
+  ]
   move_recaller_serial
   
   decay_patches
@@ -110,7 +112,7 @@ to move_inputter_serial
         set w_length long_length ;; long word
         set plabel (word p_energy " " long_length)
       ]
-      set p_energy max_p_energy
+      set p_energy energy_at_creation
       move_serial
       
       set number_of_words_internal number_of_words_internal - 1
@@ -126,10 +128,10 @@ to update_patch_colour
     ]
     [
       ifelse (w_length = short_length) [ ;; short words are green
-        set pcolor (((scale-color green p_energy 0 max_p_energy) - (green - 5)) * 0.5) + green - 5;; darker when less energy
+        set pcolor (((scale-color green p_energy 0 word_maximum_energy) - (green - 5)) * 0.5) + green - 5;; darker when less energy
       ]
       [ ;; long words are red
-        set pcolor (((scale-color red p_energy 0 max_p_energy) - (red - 5)) * 0.5) + red - 5
+        set pcolor (((scale-color red p_energy 0 word_maximum_energy) - (red - 5)) * 0.5) + red - 5
       ]
     ]
   ]
@@ -141,9 +143,9 @@ to move_recaller_serial
         set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
       ]
     
-    ifelse (stay_length > 0 and p_energy <= max_p_energy) [
+    ifelse (stay_length > 0 and p_energy <= word_maximum_energy) [
       set p_energy p_energy + energy_to_add
-      if p_energy > max_p_energy [set p_energy max_p_energy]
+      if p_energy > word_maximum_energy [set p_energy word_maximum_energy]
       set stay_length stay_length - 1
       set on_new_patch false
       set x_last_visited xcor
@@ -151,10 +153,20 @@ to move_recaller_serial
     ]
     [
       ;; if we're not staying, then move ahead one
-      move_serial
-      while [p_energy <= 0 and (x_last_visited != xcor or y_last_visited != ycor)]
-      [move_serial] ;; keep moving if nothing here
-      
+      set move_dist 1
+      while [[p_energy] of patch-ahead move_dist <= 0 and (x_last_visited != xcor + move_dist or y_last_visited != ycor)]
+      [
+        ifelse xcor + move_dist = max-pxcor ;; if reaches end of row
+        [
+          setxy min-pxcor ycor - 1 ;; go to next row
+          set move_dist 0
+        ]
+        [
+          set move_dist move_dist + 1
+        ]
+        print move_dist
+      ] ;; keep moving if nothing here
+      setxy (xcor + move_dist) ycor
       set on_new_patch true
     ]
   ]
@@ -248,10 +260,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-95
-294
-267
-327
+6
+292
+178
+325
 length_bias
 length_bias
 0
@@ -363,15 +375,45 @@ NIL
 HORIZONTAL
 
 SWITCH
-92
-351
-286
-384
+94
+377
+288
+410
 Articulatory_Suppression
 Articulatory_Suppression
 1
 1
 -1000
+
+SLIDER
+181
+291
+355
+324
+time_between_new_words
+time_between_new_words
+0
+200
+31
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+9
+329
+179
+362
+energy_at_creation
+energy_at_creation
+0
+500
+50
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -533,7 +575,7 @@ Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 
 @#$#@#$#@
-NetLogo 5.0.4
+NetLogo 5.0.3
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
