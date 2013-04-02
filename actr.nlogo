@@ -131,15 +131,16 @@ to update_patch_colour
 end
 
 to set_dest_serial
-  ifelse xcor >= max-pxcor ;; if reaches end of row
+  ifelse (newx >= max-pxcor) ;; if reaches end of row
     [
       set newx min-pxcor
-      set newy (ycor - 1) mod (min-pycor - 1)
+      set newy (newy - 1) mod (min-pycor - 1)
     ]
     [
       set newx (newx + 1)
     ]
 end
+
 to move_recaller_serial
   ask recaller [
     if (p_energy > 0 and stay_length <= 0 and on_new_patch) [ ;; if new patch, we determine how long to stay here
@@ -154,7 +155,7 @@ to move_recaller_serial
       set x_last_visited xcor
       set y_last_visited ycor
     ]
-    [
+    [ ;; we are moving on to the next patch..
       set newx xcor
       set newy ycor
       set_dest_serial
@@ -408,6 +409,28 @@ energy_at_creation
 1
 NIL
 HORIZONTAL
+
+MONITOR
+682
+277
+739
+322
+NIL
+newx
+17
+1
+11
+
+MONITOR
+791
+276
+848
+321
+NIL
+newy
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
