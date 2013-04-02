@@ -33,9 +33,7 @@ end
 to setup-patches 
   ask patches [
     set p_energy 0
-    ;;set times-visited 0 ;;intially none of words (i.e. patches) were rehearsed by articulator (i.e. turtle)
     set w_length 0      ;; placeholder to initialize, should never access if energy=0
-    ;;set l_position 0    ;; placeholder to initialize, should never access if energy=0
   ]
   
 end
@@ -75,11 +73,34 @@ end
 to decay_patches
   ask patches [
     ifelse (p_energy > 0) [
+      ;; decrease the energy, by a rate porportional to the patch's word length
       set p_energy p_energy - (energy_decay_rate * w_length)
     ]
     [ 
       set p_energy 0 ;; set to 0 if it goes negative
       set w_length 0
+    ]
+  ]
+end
+
+to move_inputter_serial
+  ask inputter [
+    if (number_of_words_internal > 0) [
+      ifelse (random 100 > length_bias) [
+        ;; depending on bias, we will either put a short word...
+        set w_length short_length
+        set plabel (word p_energy " " short_length)
+      ]
+      [
+        ;; or the other case is a long word
+        set w_length long_length
+        set plabel (word p_energy " " long_length)
+      ]
+      ;; set initial energy of patches by slider
+      set p_energy energy_at_creation
+      move_serial
+      
+      set number_of_words_internal number_of_words_internal - 1
     ]
   ]
 end
@@ -94,38 +115,54 @@ to move_serial
   ]
 end
 
-to move_inputter_serial
-  ask inputter [
-    if (number_of_words_internal > 0) [
-      ifelse (random 100 < length_bias) [
-        set w_length short_length ;; depending on bias, short word, or..
-        set plabel (word p_energy " " short_length)
-      ]
-      [
-        set w_length long_length ;; long word
-        set plabel (word p_energy " " long_length)
-      ]
-      set p_energy energy_at_creation
-      move_serial
-      
-      set number_of_words_internal number_of_words_internal - 1
-    ]
-  ]
-end
-
 to update_patch_colour
   ask patches [
-    set plabel (word p_energy " " w_length)
+    set plabel (word p_energy " " w_length) ;; label each patch with energy and word length
     ifelse (p_energy) <= 0 [
+      ;; no energy is black
       set pcolor black
     ]
     [
-      ifelse (w_length = short_length) [ ;; short words are green
+      ifelse (w_length = short_length) [ 
+        ;; short words are green
         set pcolor (((scale-color green p_energy 0 word_maximum_energy) - (green - 5)) * 0.5) + green - 5;; darker when less energy
       ]
       [ ;; long words are red
         set pcolor (((scale-color red p_energy 0 word_maximum_energy) - (red - 5)) * 0.5) + red - 5
       ]
+    ]
+  ]
+end
+
+to move_recaller_serial
+  ask recaller [
+    ;; if new patch, we determine how long to stay here
+    if (p_energy > 0 and stay_length <= 0 and on_new_patch) [
+        set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
+      ]
+    
+    ifelse (stay_length > 0 and p_energy <= word_maximum_energy) [
+      ;; add energy to this patch
+      set p_energy p_energy + energy_to_add
+      if p_energy > word_maximum_energy [set p_energy word_maximum_energy]
+      set stay_length stay_length - 1
+      set on_new_patch false
+      set x_last_visited xcor
+      set y_last_visited ycor
+    ]
+    [ 
+      ;; else we are moving on to the next patch..
+      set newx xcor
+      set newy ycor
+      set_dest_serial ;; move once, to start
+      
+      ;; second condition to avoid infinite loop 
+      while [[p_energy] of patch newx newy <= 0 and not (x_last_visited = newx and y_last_visited = newy)]
+      [set_dest_serial] ;; keep moving if nothing here
+      
+      ;; finally, move recaller to the next legitimate location
+      setxy newx newy
+      set on_new_patch true
     ]
   ]
 end
@@ -139,32 +176,6 @@ to set_dest_serial
     [
       set newx (newx + 1)
     ]
-end
-
-to move_recaller_serial
-  ask recaller [
-    if (p_energy > 0 and stay_length <= 0 and on_new_patch) [ ;; if new patch, we determine how long to stay here
-        set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
-      ]
-    
-    ifelse (stay_length > 0 and p_energy <= word_maximum_energy) [
-      set p_energy p_energy + energy_to_add
-      if p_energy > word_maximum_energy [set p_energy word_maximum_energy]
-      set stay_length stay_length - 1
-      set on_new_patch false
-      set x_last_visited xcor
-      set y_last_visited ycor
-    ]
-    [ ;; we are moving on to the next patch..
-      set newx xcor
-      set newy ycor
-      set_dest_serial
-      while [[p_energy] of patch newx newy <= 0 and not (x_last_visited = newx and y_last_visited = newy)]
-      [set_dest_serial] ;; keep moving if nothing here
-      setxy newx newy
-      set on_new_patch true
-    ]
-  ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -218,7 +229,7 @@ number_of_words
 number_of_words
 0
 100
-15
+13
 1
 1
 NIL
@@ -231,8 +242,8 @@ SLIDER
 287
 long_length
 long_length
-0
-20
+6
+15
 7
 1
 1
@@ -247,7 +258,7 @@ SLIDER
 short_length
 short_length
 0
-20
+5
 3
 1
 1
@@ -376,7 +387,7 @@ SWITCH
 410
 Articulatory_Suppression
 Articulatory_Suppression
-1
+0
 1
 -1000
 
@@ -387,9 +398,9 @@ SLIDER
 324
 time_between_new_words
 time_between_new_words
-0
-200
-31
+1
+50
+1
 1
 1
 NIL
@@ -409,28 +420,6 @@ energy_at_creation
 1
 NIL
 HORIZONTAL
-
-MONITOR
-682
-277
-739
-322
-NIL
-newx
-17
-1
-11
-
-MONITOR
-791
-276
-848
-321
-NIL
-newy
-17
-1
-11
 
 @#$#@#$#@
 ## WHAT IS IT?
