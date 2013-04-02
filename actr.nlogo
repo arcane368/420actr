@@ -199,8 +199,8 @@ GRAPHICS-WINDOW
 9
 -1
 0
-0
-0
+1
+1
 1
 ticks
 5.0
@@ -208,7 +208,7 @@ ticks
 SLIDER
 8
 125
-353
+354
 158
 energy_decay_rate
 energy_decay_rate
@@ -222,9 +222,9 @@ HORIZONTAL
 
 SLIDER
 8
-214
-237
-247
+212
+254
+245
 number_of_words
 number_of_words
 0
@@ -253,7 +253,7 @@ HORIZONTAL
 SLIDER
 7
 254
-179
+178
 287
 short_length
 short_length
@@ -266,7 +266,7 @@ NIL
 HORIZONTAL
 
 SLIDER
-6
+8
 292
 178
 325
@@ -330,10 +330,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-255
-215
-345
-248
+263
+212
+353
+245
 Add words
 set number_of_words_internal number_of_words
 NIL
@@ -353,7 +353,7 @@ PLOT
 396
 Words in memory
 Time
-# of Words
+Words
 0.0
 10.0
 0.0
@@ -368,7 +368,7 @@ PENS
 SLIDER
 7
 82
-353
+354
 115
 word_maximum_energy
 word_maximum_energy
@@ -387,15 +387,15 @@ SWITCH
 410
 Articulatory_Suppression
 Articulatory_Suppression
-0
+1
 1
 -1000
 
 SLIDER
-181
-291
-355
-324
+182
+292
+354
+325
 time_between_new_words
 time_between_new_words
 1
@@ -407,9 +407,9 @@ NIL
 HORIZONTAL
 
 SLIDER
-9
+8
 329
-179
+178
 362
 energy_at_creation
 energy_at_creation
@@ -424,11 +424,11 @@ HORIZONTAL
 @#$#@#$#@
 ## WHAT IS IT?
 
-(a general understanding of what the model is trying to show or explain)
+This is our take of modeling Baddeley & Hitch's model's phono logical loop in a Netlogo-friendly way.
 
 ## HOW IT WORKS
 
-(what rules the agents use to create the overall behavior of the model)
+The blue arrow shows where the next memory trace is about to be stored, and the yellow circle is the articulatory rehearsal component that revives the memory traces. The sliders can adjust many of the system's properties such as decay rate, energy increase rate, and so on.
 
 ## HOW TO USE IT
 
@@ -437,20 +437,20 @@ HORIZONTAL
 3. Press the GO button to begin the simulation.
 4. Look at the monitor to see the Total Amount of Words currently in memory
 
-
-
 Parameters: 
-WORD-MAXIMUM-ENERGY: The maximum amount of energy a word can contain
-ENERGY-DECAY-RATE: The initial energy decay rate
-ENERGY-TO-ADD: The amount of energy added to a word during rehersal
-NUMBER-OF-WORDS: The amount of words which will be added to memory 
-SHEEP-REPRODUCE: The probability of a sheep reproducing at each time step WOLF-REPRODUCE: The probability of a wolf reproducing at each time step 
-SHORT-LENGTH: Defines length for short words
-LONG-LENGTH: Defines length for long words
-LENGTH-BIAS: Used to bias randomly choosen word lengths used
+`word_maximum_energy`: 	The maximum amount of energy a word can contain
+energy_decay_rate: 	How fast a memory trace decays
+energy_to_add: 		The amount of energy added to a word during rehersal
+number_of_words: 	The amount of words which will be added to memory 
+short_length: 		Defines length for short words
+long_lenth: 		Defines length for long words
+length_bias: 		Used to bias word lengths; lower = more short words, higher = more long words
+time_between_new_words:	How much delay between adding each word
+energy_at_creation:	How much energy does a memory trace start with
 
-Notes: - Add words button when clicked will add NUMBER-OF-WORDS more words to the model.
-         The Articulatory Suppression switch removes the rehersal turtle.
+Notes: 
+- Add words button when clicked will add number_of_words more words to the model.
+- The Articulatory Suppression switch removes the rehersal turtle.
 
 ## THINGS TO NOTICE
 
@@ -465,7 +465,8 @@ What kind of results do you expect to see? Are the results different than when c
 
 ## EXTENDING THE MODEL
 
-(suggested extenstions to model)
+- instead of sliders, more formulae could be used from the models
+- instead of simulating lengths of words, lists of actual words can be imported, and also would make phrenological similarity more straightforward to implement
 
 
 ## NETLOGO FEATURES
