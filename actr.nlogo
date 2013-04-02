@@ -1,6 +1,6 @@
 globals [
-  number_of_words_internal
-  newx
+  number_of_words_internal ;; Counter for the number of words that still has to be added. Seperate from number_of_words so that it can be decremented when a new word is added.
+  newx ;; The coordinates the recall agent 'looks' ahead at to see if it is an appropriate location to move to.
   newy
 ]
 
@@ -25,7 +25,7 @@ to setup
   clear-all
   setup-patches
   setup-turtles
-  set number_of_words_internal number_of_words
+  set number_of_words_internal number_of_words ;; The number of words that still has to be added is set to the slider number_of_words
   random-seed 4356653
   reset-ticks
 end
@@ -47,7 +47,7 @@ to setup-turtles
     set heading 90 ;; turn to right
   ]
   ask recaller [
-    set on_new_patch true
+    set on_new_patch true ;; so the recaller will start off by checking the patch it's sitting on
   ]
 
 end
@@ -56,11 +56,12 @@ end
 
 
 
-;; Runtime procedures moving turtle to patch, turtle visits to patch and adding energy to patch
+;; Runtime procedures moving turtle to patch, turtle visits to patch and adding energy to patch. The recaller will move every tick (and words will keep decaying each tick), but
+;; words be added less frequently (based on time_between_new_words)
 
 to go
   update_patch_colour
-  if ticks mod time_between_new_words = 0
+  if ticks mod time_between_new_words = 0 ;; Every time a number of ticks equal to time_between_new_words has passed, a new word will be added
   [
     move_inputter_serial
   ]
@@ -70,11 +71,14 @@ to go
   tick
 end
 
+;; Removes energy from patches to represent words fading from memory. Decay rate is based on the global decay rate, the global phonological similarity, and the length of the word
+;; itself (longer words decay faster).
+
 to decay_patches
   ask patches [
     ifelse (p_energy > 0) [
-      ;; decrease the energy, by a rate porportional to the patch's word length
-      set p_energy p_energy - (energy_decay_rate * w_length)
+      ;; decrease the energy, by a rate porportional to the patch's word length and the phonological similarity of the words in general
+      set p_energy p_energy - (energy_decay_rate * w_length * phonological_similarity)
     ]
     [ 
       set p_energy 0 ;; set to 0 if it goes negative
@@ -83,9 +87,12 @@ to decay_patches
   ]
 end
 
+;; Procedure for the turtle/agent that adds new words. While there are still words to be added (number_of_words_internal), it will add either a short or long word randomly
+;; with the odds determined by the length_bias slider. Whenever a word is added, number_of_words_internal is decremented by one.
+
 to move_inputter_serial
   ask inputter [
-    if (number_of_words_internal > 0) [
+    if (number_of_words_internal > 0) [ ;; if there are words yet to be added
       ifelse (random 100 > length_bias) [
         ;; depending on bias, we will either put a short word...
         set w_length short_length
@@ -105,15 +112,22 @@ to move_inputter_serial
   ]
 end
 
+
+;; Moves a turtle to the right across the screen, or jumps to the start of the next row if it's at the end of a row
+
 to move_serial
   ifelse xcor = max-pxcor ;; if reaches end of row
   [
     setxy min-pxcor ycor - 1 ;; go to next row
   ]
   [
-    forward 1
+    forward 1 ;; otherwise, continue forward
   ]
 end
+
+;; Sets the patch labels and colour based on the word length and colour. Short words are green, long words are red.
+;; Brightness is determined based on the energy of the patch relative to the maximum energy a patch can have, with
+;; higher energy resulting in a brighter colour.
 
 to update_patch_colour
   ask patches [
@@ -134,20 +148,22 @@ to update_patch_colour
   ]
 end
 
+;; Procedure for moving the turtle/agent responsible for rehearsing words held in the phonological loop.
+
 to move_recaller_serial
   ask recaller [
     ;; if new patch, we determine how long to stay here
     if (p_energy > 0 and stay_length <= 0 and on_new_patch) [
-        set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
+        set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks (if this is a new patch, stay_length hasn't been set already, and the patch has energy)
       ]
     
     ifelse (stay_length > 0 and p_energy <= word_maximum_energy) [
       ;; add energy to this patch
       set p_energy p_energy + energy_to_add
       if p_energy > word_maximum_energy [set p_energy word_maximum_energy]
-      set stay_length stay_length - 1
-      set on_new_patch false
-      set x_last_visited xcor
+      set stay_length stay_length - 1 ;; decreases stay time
+      set on_new_patch false ;; tells the turtle not to see this as a new word once stay_length runs out
+      set x_last_visited xcor ;; saving the location so the turtle 'remembers' where it was last
       set y_last_visited ycor
     ]
     [ 
@@ -156,9 +172,9 @@ to move_recaller_serial
       set newy ycor
       set_dest_serial ;; move once, to start
       
-      ;; second condition to avoid infinite loop 
+      ;; second condition to avoid infinite loop - makes sure that the patch has energy, and stops looking ahead once it reaches the patch it was just on 
       while [[p_energy] of patch newx newy <= 0 and not (x_last_visited = newx and y_last_visited = newy)]
-      [set_dest_serial] ;; keep moving if nothing here
+      [set_dest_serial] ;; looks one more patch ahead if nothing here
       
       ;; finally, move recaller to the next legitimate location
       setxy newx newy
@@ -167,10 +183,13 @@ to move_recaller_serial
   ]
 end
 
+;; looks at the patches in 'front' of itself, rather than moving ahead and checking if the patch it's on has energy. Prevents decay of stored words while the turtle is
+;; trying to find a new word
+
 to set_dest_serial
   ifelse (newx >= max-pxcor) ;; if reaches end of row
     [
-      set newx min-pxcor
+      set newx min-pxcor ;; starts looking at the beginning of the next row down
       set newy (newy - 1) mod (min-pycor - 1)
     ]
     [
@@ -214,7 +233,7 @@ energy_decay_rate
 energy_decay_rate
 0
 15
-1.5
+0.5
 0.1
 1
 NIL
@@ -374,7 +393,7 @@ word_maximum_energy
 word_maximum_energy
 0
 500
-100
+200
 50
 1
 NIL
@@ -400,7 +419,7 @@ time_between_new_words
 time_between_new_words
 1
 50
-1
+25
 1
 1
 NIL
@@ -421,14 +440,29 @@ energy_at_creation
 NIL
 HORIZONTAL
 
+SLIDER
+182
+330
+354
+363
+phonological_similarity
+phonological_similarity
+1
+5
+1
+0.5
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
-This is our take of modeling Baddeley & Hitch's model's phono logical loop in a Netlogo-friendly way.
+This is our take of modeling Baddeley & Hitch's model's phonological loop in a Netlogo-friendly way.
 
 ## HOW IT WORKS
 
-The blue arrow shows where the next memory trace is about to be stored, and the yellow circle is the articulatory rehearsal component that revives the memory traces. The sliders can adjust many of the system's properties such as decay rate, energy increase rate, and so on.
+The blue arrow shows where the next memory trace is about to be stored, and the yellow circle is the articulatory rehearsal component that revives the memory traces. The sliders can adjust many of the system's properties such as decay rate, energy increase rate, and so on. 
 
 ## HOW TO USE IT
 
@@ -438,24 +472,36 @@ The blue arrow shows where the next memory trace is about to be stored, and the 
 4. Look at the monitor to see the Total Amount of Words currently in memory
 
 Parameters: 
-`word_maximum_energy`: 	The maximum amount of energy a word can contain
-energy_decay_rate: 	How fast a memory trace decays
-energy_to_add: 		The amount of energy added to a word during rehersal
-number_of_words: 	The amount of words which will be added to memory 
-short_length: 		Defines length for short words
-long_lenth: 		Defines length for long words
-length_bias: 		Used to bias word lengths; lower = more short words, higher = more long words
-time_between_new_words:	How much delay between adding each word
-energy_at_creation:	How much energy does a memory trace start with
+
+- word_maximum_energy: 	The maximum amount of energy a word can contain. Higher values increase the effect of rehearsing a word on negating decay.
+
+- energy_decay_rate: 	How fast a memory trace decays.
+
+- energy_to_add: 		The amount of energy added to a word during rehersal.
+
+- number_of_words: 	The number of words that will be added to memory.
+
+- short_length: 		Defines length for short words. Longer words will decay faster.
+
+- long_lenth: 		Defines length for long words
+
+- length_bias: 		Used to bias word lengths; lower = more short words, higher = more long words
+
+- time_between_new_words:	How much delay between adding each word
+
+- energy_at_creation:	How much energy does each memory trace start with. The closer this is to word_maximum_energy, the less effect repetition of a word in memory will have.
+
+- phonological_similarity:The degree to which the words 'sound' the same. Increases challenge of memorization.
 
 Notes: 
+
 - Add words button when clicked will add number_of_words more words to the model.
 - The Articulatory Suppression switch removes the rehersal turtle.
 
 ## THINGS TO NOTICE
 
 Notice that longer words stay in memory for less amount of time then the short words.
-This is because shorter words can be rehersed more often in memory, gaining more enery than longer words and hence can stay in memory longer.
+This is because shorter words can be rehersed more often in memory, gaining more enery than longer words and hence can stay in memory longer. If the base energy is set to the maximum energy, then the additional rehearsal of the first few words when words are being added more slowly will be less effective, and the model will not show a serial position effect (or at least not as strongly).
 
 ## THINGS TO TRY
 
@@ -467,6 +513,7 @@ What kind of results do you expect to see? Are the results different than when c
 
 - instead of sliders, more formulae could be used from the models
 - instead of simulating lengths of words, lists of actual words can be imported, and also would make phrenological similarity more straightforward to implement
+- base values could be fine tuned so that the output matches empirical data
 
 
 ## NETLOGO FEATURES
@@ -480,7 +527,8 @@ Red patches are long words and Green patches are short words. As energy decrease
 
 ## CREDITS AND REFERENCES
 
-(credits/references)
+An ACT-R/PM Model of the Articulatory Loop
+Huss, David and Byrne, David
 @#$#@#$#@
 default
 true
