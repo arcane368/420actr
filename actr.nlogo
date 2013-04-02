@@ -16,8 +16,8 @@ turtles-own [
   y_last_visited
 ]
 
-breed [inputters inputter]
-breed [recallers recaller]
+breed [inputter]
+breed [recaller]
 
 ;; Setup procedures
 
@@ -41,22 +41,17 @@ to setup-patches
 end
 
 to setup-turtles
-  ifelse Articulatory_Suppression [     ;; ifelse statement for Articulatory Suppression
-    create-inputters 1 [set color blue] ;; adds words
-    ask turtles [
-      set heading 90 ;; turn to right
-    ]
+  if not Articulatory_Suppression [     ;; ifelse statement for Articulatory Suppression
+    create-recaller 1 [set color yellow set shape "circle"] ;; recalls words
   ]
-  [
-    create-inputters 1 [set color blue] ;; adds words
-    create-recallers 1 [set color yellow set shape "circle"] ;; recalls words
-    ask turtles [
-       set heading 90 ;; turn to right
-    ]
-    ask recallers [
-       set on_new_patch true
-    ]
+  create-inputter 1 [set color blue] ;; adds words
+  ask turtles [
+    set heading 90 ;; turn to right
   ]
+  ask recaller [
+    set on_new_patch true
+  ]
+
 end
 
 
@@ -100,7 +95,7 @@ to move_serial
 end
 
 to move_inputter_serial
-  ask inputters [
+  ask inputter [
     if (number_of_words_internal > 0) [
       ifelse (random 100 < length_bias) [
         set w_length short_length ;; depending on bias, short word, or..
@@ -135,8 +130,18 @@ to update_patch_colour
   ]
 end
 
+to set_dest_serial
+  ifelse xcor >= max-pxcor ;; if reaches end of row
+    [
+      set newx min-pxcor
+      set newy (ycor - 1) mod (min-pycor - 1)
+    ]
+    [
+      set newx (newx + 1)
+    ]
+end
 to move_recaller_serial
-  ask recallers [
+  ask recaller [
     if (p_energy > 0 and stay_length <= 0 and on_new_patch) [ ;; if new patch, we determine how long to stay here
         set stay_length w_length / 2 ;; stay on this patch for word length/2 ticks
       ]
@@ -150,28 +155,11 @@ to move_recaller_serial
       set y_last_visited ycor
     ]
     [
-      ;; if we're not staying, then move ahead one
       set newx xcor
       set newy ycor
-      ifelse xcor >= max-pxcor ;; if reaches end of row
-        [
-          set newx min-pxcor
-          set newy (ycor - 1) mod (min-pycor - 1)
-        ]
-        [
-          set newx (newx + 1)
-        ]
+      set_dest_serial
       while [[p_energy] of patch newx newy <= 0 and not (x_last_visited = newx and y_last_visited = newy)]
-      [
-        ifelse xcor >= max-pxcor ;; if reaches end of row
-        [
-          set newx min-pxcor
-          set newy (ycor - 1) mod (min-pycor - 1)
-        ]
-        [
-          set newx (newx + 1)
-        ]
-      ] ;; keep moving if nothing here
+      [set_dest_serial] ;; keep moving if nothing here
       setxy newx newy
       set on_new_patch true
     ]
